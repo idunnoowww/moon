@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full w-full overflow-hidden">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Colour of Loving You — An Oceanic Poetry Experience</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Pinyon+Script&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        midnight: '#0B1426',
+                        oceanDeep: '#142943',
+                        stormySteel: '#526C8A',
+                        mutedSilver: '#A9BCD5',
+                        paleMoonlight: '#E8EEF6',
+                        mistGrey: '#C7D0DC',
+                    },
+                    fontFamily: {
+                        handwriting: ['Caveat', 'cursive'],
+                        calligraphy: ['Pinyon Script', 'cursive'],
+                        serif: ['Cormorant Garamond', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0B1426;
+            color: #E8EEF6;
+            font-family: 'Cormorant Garamond', serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Film Grain Overlay */
+        .film-grain {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
+        }
+
+        /* Moon Glow */
+        .moon-glow {
+            box-shadow: 0 0 60px 15px rgba(232, 238, 246, 0.25), 0 0 120px 40px rgba(169, 188, 213, 0.15);
+        }
+
+        .moon-glow-active {
+            box-shadow: 0 0 120px 40px rgba(232, 238, 246, 0.55), 0 0 200px 80px rgba(169, 188, 213, 0.4);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 12px rgba(232, 238, 246, 0.35);
+        }
+
+        /* Journal Paper Overlay */
+        .journal-paper {
+            background: linear-gradient(135deg, rgba(20, 41, 67, 0.9) 0%, rgba(11, 20, 38, 0.95) 100%);
+            border: 1px solid rgba(169, 188, 213, 0.2);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 40px rgba(82, 108, 138, 0.15);
+        }
+
+        @keyframes gentle-pulse {
+            0%, 100% { opacity: 0.4; transform: translateY(0); }
+            50% { opacity: 0.9; transform: translateY(-4px); }
+        }
+        .animate-gentle-pulse {
+            animation: gentle-pulse 3.5s ease-in-out infinite;
+        }
+
+        @keyframes ripple {
+            0% { transform: scale(1); opacity: 0.9; }
+            100% { transform: scale(4); opacity: 0; }
+        }
+        .ripple-effect {
+            animation: ripple 1.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        }
+
+        /* Twinkle animation for constellation stars */
+        @keyframes vega-glow {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 15px #E8EEF6, 0 0 30px #A9BCD5; }
+            50% { transform: scale(1.25); box-shadow: 0 0 25px #FFFFFF, 0 0 50px #A9BCD5; }
+        }
+        .animate-vega {
+            animation: vega-glow 2.8s ease-in-out infinite;
+        }
+
+        .page-transition {
+            transition: opacity 1.2s ease-in-out, transform 1.2s ease-in-out;
+        }
+    </style>
+</head>
+<body class="h-full w-full overflow-hidden relative selection:bg-stormySteel selection:text-paleMoonlight">
+
+    <!-- Canvas Background for Ocean, Fog & Stars -->
+    <canvas id="oceanCanvas" class="absolute inset-0 w-full h-full z-0 pointer-events-none"></canvas>
+
+    <!-- Noise Texture Overlay -->
+    <div class="absolute inset-0 w-full h-full pointer-events-none z-1 film-grain"></div>
+
+    <!-- UI Overlay / Controls Header -->
+    <header class="fixed top-0 left-0 right-0 z-40 p-4 sm:p-6 flex justify-between items-center opacity-90 hover:opacity-100 transition-opacity">
+        <div class="flex items-center space-x-2">
+            <span class="font-calligraphy text-2xl sm:text-3xl text-paleMoonlight tracking-wider">the ocean of feelings</span>
+        </div>
+
+        <!-- Audio & Ambient Controls -->
+        <div class="flex items-center space-x-3">
+            <button id="audioToggleBtn" class="flex items-center space-x-2 text-xs sm:text-sm font-handwriting text-mutedSilver hover:text-paleMoonlight transition-colors px-3 sm:px-4 py-2 rounded-full border border-stormySteel/40 bg-oceanDeep/50 backdrop-blur-md shadow-lg active:scale-95">
+                <i data-lucide="volume-x" id="audioIcon" class="w-4 h-4"></i>
+                <span id="audioStatusText" class="hidden sm:inline">ambient tide</span>
+            </button>
+        </div>
+    </header>
+
+
+    <!-- GLOBAL FLOATING SPOTIFY PLAYER WIDGET (Requirement 1) -->
+    <div id="globalSpotifyWidget" class="fixed bottom-20 sm:bottom-24 right-4 sm:right-6 z-50 transition-all duration-500">
+        <!-- Floating Expandable Card Container -->
+        <div id="spotifyEmbedContainer" class="hidden mb-3 w-[280px] sm:w-[320px] p-3 rounded-2xl journal-paper shadow-2xl border border-stormySteel/50 backdrop-blur-xl animate-fade-in">
+            <div class="flex items-center justify-between pb-2 border-b border-stormySteel/30 mb-2">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="music" class="w-4 h-4 text-emerald-400 animate-pulse"></i>
+                    <span class="font-handwriting text-base text-paleMoonlight">Soundtrack for this ocean</span>
+                </div>
+                <button id="closeSpotifyWidget" class="text-mutedSilver hover:text-paleMoonlight transition-colors p-1 rounded-full">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <!-- User Exact Spotify Track Embed (2WKGARSXvXK156u2aYwkWB) -->
+            <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/2WKGARSXvXK156u2aYwkWB?utm_source=generator&theme=0" width="100%" height="152" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        </div>
+
+        <!-- Floating Disc Toggle Button -->
+        <button id="toggleSpotifyWidget" class="flex items-center space-x-2 bg-oceanDeep/80 hover:bg-stormySteel/40 text-paleMoonlight border border-stormySteel/50 backdrop-blur-md px-4 py-2.5 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 group">
+            <div class="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center group-hover:rotate-180 transition-transform duration-700">
+                <i data-lucide="disc" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+            <span class="font-handwriting text-sm sm:text-base text-mutedSilver group-hover:text-paleMoonlight">spotify track</span>
+        </button>
+    </div>
+
+
+    <!-- MAIN VIEWPORT CONTAINER -->
+    <main id="viewContainer" class="relative z-10 w-full h-full flex items-center justify-center overflow-hidden">
+
+        <!-- PAGE 1 — THE MOON GATE -->
+        <section id="page-1" class="page-transition absolute inset-0 w-full h-full flex flex-col items-center justify-center p-6 text-center opacity-100 pointer-events-auto">
+            <div class="max-w-xl mx-auto flex flex-col items-center justify-between h-4/5 max-h-[640px] z-10">
+                
+                <div class="space-y-3 mt-6">
+                    <h1 class="font-serif text-2xl sm:text-3xl md:text-4xl text-paleMoonlight text-glow font-light italic tracking-wide leading-relaxed">
+                        "i wonder if the moon misses someone, too."
+                    </h1>
+                    <p class="font-handwriting text-xl sm:text-2xl text-mutedSilver/90 font-normal">
+                        some things are easier to feel than to say.
+                    </p>
+                </div>
+
+                <!-- Interactive Moon Centerpiece -->
+                <div class="relative my-auto group cursor-pointer" id="moonGateButton">
+                    <div id="moonVisual" class="w-40 h-40 sm:w-52 sm:h-52 rounded-full bg-gradient-to-tr from-mistGrey via-paleMoonlight to-white moon-glow transition-all duration-700 group-hover:scale-105 flex items-center justify-center relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-30 bg-[radial-gradient(#526C8A_1px,transparent_1px)] [background-size:12px_12px]"></div>
+                        <div class="w-full h-full rounded-full bg-gradient-to-br from-transparent via-stormySteel/20 to-midnight/60"></div>
+                    </div>
+                    <div id="rippleContainer" class="absolute inset-0 pointer-events-none flex items-center justify-center"></div>
+                </div>
+
+                <div class="animate-gentle-pulse mb-8">
+                    <p class="font-handwriting text-2xl sm:text-3xl text-paleMoonlight/90 tracking-wider">
+                        tap the moon to begin
+                    </p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- PAGE 2 — THE POETRY CANVAS -->
+        <section id="page-2" class="page-transition absolute inset-0 w-full h-full flex items-center justify-center p-6 opacity-0 pointer-events-none">
+            <div class="w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                <div class="md:col-span-10 md:col-start-2 lg:col-span-8 lg:col-start-3 space-y-8 bg-oceanDeep/40 p-8 sm:p-12 rounded-2xl border border-stormySteel/30 backdrop-blur-md shadow-2xl">
+                    <div class="border-b border-stormySteel/30 pb-4">
+                        <h2 class="font-calligraphy text-3xl sm:text-5xl text-paleMoonlight tracking-wide">
+                            the colour of loving you
+                        </h2>
+                    </div>
+
+                    <div class="font-serif text-lg sm:text-xl md:text-2xl text-paleMoonlight/90 font-light leading-relaxed space-y-6">
+                        <p class="italic text-mutedSilver">
+                            i think i'always loved you<br>
+                            <span class="pl-6 font-normal text-paleMoonlight">in shades of blue.</span>
+                        </p>
+
+                        <p class="pl-4 sm:pl-8 text-base sm:text-lg text-paleMoonlight/80">
+                            in the quiet before midnight,<br>
+                            in the silver trembling on the sea,<br>
+                            in every little thing<br>
+                            that somehow leads me back to you.
+                        </p>
+
+                        <p class="pl-2 sm:pl-4 italic text-base sm:text-lg">
+                            maybe that's what loving you feels like—<br>
+                            standing by the ocean,<br>
+                            watching the waves reach for the shore<br>
+                            only to disappear again.
+                        </p>
+
+                        <p class="text-right pr-6 font-handwriting text-2xl sm:text-3xl text-mutedSilver">
+                            and still, they return.
+                        </p>
+
+                        <p class="pt-2 text-center text-base sm:text-lg text-paleMoonlight/70 font-light italic">
+                            sometimes, i wonder<br>
+                            if you ever look at the sea<br>
+                            and think of me, too.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- PAGE 3 — THE DIARY ROOM -->
+        <section id="page-3" class="page-transition absolute inset-0 w-full h-full flex items-center justify-center p-4 sm:p-8 opacity-0 pointer-events-none">
+            <div class="w-full max-w-2xl mx-auto journal-paper rounded-2xl p-6 sm:p-10 relative overflow-hidden my-auto max-h-[85vh] flex flex-col justify-between">
+                <div class="absolute top-3 right-4 font-handwriting text-sm text-stormySteel">page 03 / midnight entry</div>
+
+                <div class="mb-4 border-b border-stormySteel/30 pb-3">
+                    <h2 class="font-calligraphy text-2xl sm:text-4xl text-paleMoonlight">
+                        dear diary, i think i miss them again.
+                    </h2>
+                </div>
+
+                <div class="overflow-y-auto pr-2 space-y-4 font-serif text-sm sm:text-base md:text-lg text-paleMoonlight/90 font-light leading-relaxed max-h-[55vh]">
+                    <p class="font-handwriting text-2xl text-mutedSilver">dear diary,</p>
+                    <p>i think i miss them most in the little moments. when something funny happens and they're still the first person i want to tell, or when a song plays and somehow, it feels like it belongs to them.</p>
+                    <p>sometimes i wonder if they ever think of me like that, too. if they ever come across something and wish i were there to see it. if they miss me in the quiet moments, when there's no one else around.</p>
+                    <p class="italic text-mutedSilver/90 border-l-2 border-stormySteel/40 pl-3 my-2">i hate how i still look for them in things, even when i know i can't always reach them.</p>
+                    <p>i know they have their own world, their own thoughts, their own reasons for being distant. i've tried to understand that. i really have.</p>
+                    <p>but sometimes, i wish i didn't have to be so understanding. sometimes, i just want to be missed. to be remembered without having to wonder if i still matter.</p>
+                    <p class="pt-2 font-handwriting text-xl sm:text-2xl text-paleMoonlight text-right">i don't know what i am to them anymore. i just know that, somehow, they still feel like home to a part of me that doesn't know where else to go.</p>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-stormySteel/20 text-right">
+                    <span class="font-handwriting text-sm sm:text-base text-stormySteel italic">— written in silence</span>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- PAGE 4 — THE LYRA CONSTELLATION MEMORY ARCHIVE (Requirement 2) -->
+        <section id="page-4" class="page-transition absolute inset-0 w-full h-full flex flex-col items-center justify-between p-4 sm:p-6 opacity-0 pointer-events-none">
+            
+            <div class="mt-14 sm:mt-16 text-center z-20">
+                <h2 class="font-calligraphy text-3xl sm:text-5xl text-paleMoonlight">
+                    things the tide couldn't take
+                </h2>
+                <p id="memoryCounter" class="font-handwriting text-base sm:text-xl text-mutedSilver mt-1">
+                    the Lyra constellation — tap stars to gather memories (0 of 6 found)
+                </p>
+            </div>
+
+            <!-- Constellation Container with SVG vector connecting lines & HTML Star Nodes -->
+            <div id="lyraConstellationArea" class="relative w-full max-w-xl h-[52vh] my-auto z-20 flex items-center justify-center">
+                <!-- SVG Vector Lines for Lyra Constellation (Requirement 2) -->
+                <svg id="lyraLinesSvg" class="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Lines linking Vega -> Epsilon -> Zeta -> Vega and Zeta -> Sheliak -> Sulafat -> Delta -> Zeta -->
+                </svg>
+
+                <!-- Interactive Star Nodes HTML container populated by JS -->
+                <div id="lyraStarsContainer" class="absolute inset-0 w-full h-full"></div>
+            </div>
+
+            <!-- Memory Fragment Modal Popup -->
+            <div id="memoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-midnight/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-500">
+                <div class="journal-paper rounded-2xl p-6 sm:p-8 max-w-md w-full relative transform scale-95 transition-transform duration-300 space-y-4">
+                    <button id="closeMemoryBtn" class="absolute top-4 right-4 text-mutedSilver hover:text-paleMoonlight transition-colors p-2 rounded-full hover:bg-stormySteel/20">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                    <div id="modalTag" class="font-handwriting text-xl text-stormySteel">01 — Vega</div>
+                    <h3 id="modalTitle" class="font-serif text-2xl font-normal text-paleMoonlight italic border-b border-stormySteel/30 pb-2">Title</h3>
+                    <p id="modalBody" class="font-serif text-base sm:text-lg text-paleMoonlight/90 leading-relaxed pt-2">Body text...</p>
+                    <div class="text-right pt-4">
+                        <span class="font-handwriting text-sm text-mutedSilver/60">preserved in Lyra's light</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- PAGE 5 — THE REASON & FINAL NOTES -->
+        <section id="page-5" class="page-transition absolute inset-0 w-full h-full flex items-center justify-center p-4 sm:p-8 opacity-0 pointer-events-none">
+            <div class="w-full max-w-2xl mx-auto journal-paper rounded-2xl p-6 sm:p-10 relative my-auto max-h-[88vh] flex flex-col justify-between overflow-y-auto">
+                
+                <div class="border-b border-stormySteel/30 pb-3 mb-4">
+                    <h2 class="font-calligraphy text-3xl sm:text-5xl text-paleMoonlight">
+                        so, why this little website?
+                    </h2>
+                </div>
+
+                <div class="space-y-4 font-serif text-sm sm:text-base text-paleMoonlight/90 leading-relaxed font-light">
+                    <p class="font-handwriting text-2xl text-mutedSilver">
+                        okay, so… this is actually for someone WKWKWK.
+                    </p>
+
+                    <p>
+                        sebenernya aku cuma pengen bikin sesuatu yg bisa nyimpen sedikit perasaan aku tentang seseorang. sounds cheesy, i know 😭 tapi daripada cuma dipikirin terus, kenapa nggak dijadiin sesuatu aja?
+                    </p>
+
+                    <p>
+                        and no, orangnya probably won't ever see this. which is kinda funny, honestly. bikin web secantik ini buat seseorang yang bahkan mungkin gak tau kalau web ini ada WKWKWK.
+                    </p>
+
+                    <p class="italic text-mutedSilver">
+                        but thats okay, i guess. gak semua hal harus diketahui orangnya, kan? sometimes, u just wanna make something bc someone means a lot to u.
+                    </p>
+
+                    <p class="font-handwriting text-2xl text-paleMoonlight pt-2">
+                        so yeah, here's a little piece of my feelings, turned into an ocean.<br>
+                        and thats pretty much it.
+                    </p>
+                </div>
+
+                <div class="mt-6 text-center pt-2">
+                    <button id="finalShimmerBtn" class="font-handwriting text-lg text-mutedSilver/80 hover:text-paleMoonlight transition-colors px-6 py-2 rounded-full border border-stormySteel/30 active:scale-95">
+                        ✨ touch the sea one last time
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+
+    <!-- NAVIGATION FOOTER HUD -->
+    <footer id="navHud" class="fixed bottom-0 left-0 right-0 z-40 p-4 sm:p-6 flex justify-between items-center transition-opacity duration-500 opacity-0 pointer-events-none">
+        <button id="prevBtn" class="flex items-center space-x-2 text-sm sm:text-base font-handwriting text-mutedSilver hover:text-paleMoonlight transition-all px-4 py-2 rounded-full bg-oceanDeep/60 border border-stormySteel/40 backdrop-blur-md active:scale-95 disabled:opacity-0 disabled:pointer-events-none">
+            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+            <span>previous scene</span>
+        </button>
+
+        <div class="flex items-center space-x-3 sm:space-x-4 bg-oceanDeep/60 px-4 py-2 rounded-full border border-stormySteel/30 backdrop-blur-md" id="indicatorContainer">
+            <button data-page="1" class="page-dot w-3 h-3 rounded-full bg-paleMoonlight transition-all duration-300"></button>
+            <button data-page="2" class="page-dot w-2.5 h-2.5 rounded-full bg-stormySteel/40 hover:bg-mutedSilver transition-all duration-300"></button>
+            <button data-page="3" class="page-dot w-2.5 h-2.5 rounded-full bg-stormySteel/40 hover:bg-mutedSilver transition-all duration-300"></button>
+            <button data-page="4" class="page-dot w-2.5 h-2.5 rounded-full bg-stormySteel/40 hover:bg-mutedSilver transition-all duration-300"></button>
+            <button data-page="5" class="page-dot w-2.5 h-2.5 rounded-full bg-stormySteel/40 hover:bg-mutedSilver transition-all duration-300"></button>
+        </div>
+
+        <button id="nextBtn" class="flex items-center space-x-2 text-sm sm:text-base font-handwriting text-mutedSilver hover:text-paleMoonlight transition-all px-4 py-2 rounded-full bg-oceanDeep/60 border border-stormySteel/40 backdrop-blur-md active:scale-95 disabled:opacity-0 disabled:pointer-events-none">
+            <span>next scene</span>
+            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </button>
+    </footer>
+
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        lucide.createIcons();
+
+        let currentPage = 1;
+        const totalPages = 5;
+
+        // Lyra Constellation Star Data & Memory Fragments (Requirement 2)
+        const lyraStarData = [
+            { id: "01", starName: "Vega (Alpha Lyrae)", title: "the little things", body: "the way the smallest things remind me of you, even when i'm trying not to think about you.", x: 50, y: 15, isVega: true },
+            { id: "02", starName: "Epsilon Lyrae", title: "the distance", body: "you're somewhere out there, living a life i can only imagine, and i'm here wondering if our worlds still meet somewhere in the middle.", x: 28, y: 32, isVega: false },
+            { id: "03", starName: "Zeta Lyrae", title: "the unsent words", body: "there are things i still want to tell you. little stories, random thoughts, things that probably don't matter. but i keep them to myself now.", x: 42, y: 48, isVega: false },
+            { id: "04", starName: "Sheliak (Beta Lyrae)", title: "the unknown", body: "i don't know if you miss me. i don't know if i cross your mind. maybe i'll never know, and maybe that's what i'll have to learn to live with.", x: 25, y: 78, isVega: false },
+            { id: "05", starName: "Sulafat (Gamma Lyrae)", title: "the tenderness", body: "despite everything, a part of me still hopes life is gentle with you. even on the days when i wish things between us had been gentler, too.", x: 62, y: 82, isVega: false },
+            { id: "06", starName: "Delta Lyrae", title: "if we become strangers", body: "if one day we're strangers again, i hope some part of you remembers that somewhere in this world, someone once cared about you more than they knew how to explain.", x: 72, y: 52, isVega: false }
+        ];
+
+        let foundMemories = new Set();
+
+        // Canvas Rendering Engine (Fixed Requirement 3: Polygon artifact eliminated)
+        const canvas = document.getElementById('oceanCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let stars = [];
+        let waveOffset = 0;
+
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initStars();
+            if (currentPage === 4) renderLyraConstellation();
+        }
+
+        function initStars() {
+            stars = [];
+            const count = Math.floor((width * height) / 9000);
+            for (let i = 0; i < count; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * (height * 0.55),
+                    radius: Math.random() * 1.3,
+                    alpha: Math.random(),
+                    speed: 0.005 + Math.random() * 0.01
+                });
+            }
+        }
+
+        function drawOcean() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Sky Gradient
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, height * 0.6);
+            skyGradient.addColorStop(0, '#0B1426');
+            skyGradient.addColorStop(0.7, '#142943');
+            skyGradient.addColorStop(1, '#1A3352');
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, width, height * 0.6);
+
+            // Stars
+            stars.forEach(star => {
+                star.alpha += star.speed;
+                if (star.alpha > 1 || star.alpha < 0) star.speed = -star.speed;
+                ctx.fillStyle = `rgba(232, 238, 246, ${Math.abs(star.alpha) * 0.75})`;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // FIXED (Requirement 3): Smooth Radial Elliptical Moonlight Glow (No angular/parallelogram polygon clipping)
+            const horizonY = height * 0.52;
+            const moonX = width * 0.5;
+
+            const radialGlow = ctx.createRadialGradient(
+                moonX, horizonY + 80, 10,
+                moonX, horizonY + 120, width * 0.35
+            );
+            radialGlow.addColorStop(0, 'rgba(232, 238, 246, 0.22)');
+            radialGlow.addColorStop(0.5, 'rgba(169, 188, 213, 0.08)');
+            radialGlow.addColorStop(1, 'rgba(11, 20, 38, 0)');
+
+            ctx.fillStyle = radialGlow;
+            ctx.beginPath();
+            ctx.ellipse(moonX, horizonY + 120, width * 0.35, height * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Waves Animation
+            waveOffset += 0.015;
+            drawWaveLayer(horizonY, 15, 0.01, waveOffset, '#142943', 0.85);
+            drawWaveLayer(horizonY + 30, 22, 0.008, -waveOffset * 0.8, '#0F1F35', 0.9);
+            drawWaveLayer(horizonY + 70, 30, 0.005, waveOffset * 0.6, '#0B1426', 1.0);
+        }
+
+        function drawWaveLayer(baseY, amplitude, frequency, phase, color, alpha) {
+            ctx.fillStyle = color;
+            ctx.globalAlpha = alpha;
+            ctx.beginPath();
+            ctx.moveTo(0, height);
+            ctx.lineTo(0, baseY);
+
+            for (let x = 0; x <= width; x += 10) {
+                const y = baseY + Math.sin(x * frequency + phase) * amplitude + Math.cos(x * 0.002 + phase) * 5;
+                ctx.lineTo(x, y);
+            }
+
+            ctx.lineTo(width, height);
+            ctx.closePath();
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+        }
+
+        function renderLoop() {
+            drawOcean();
+            requestAnimationFrame(renderLoop);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        renderLoop();
+
+        // Page Navigation
+        function goToPage(pageNumber) {
+            if (pageNumber < 1 || pageNumber > totalPages) return;
+
+            const currentEl = document.getElementById(`page-${currentPage}`);
+            if (currentEl) {
+                currentEl.classList.remove('opacity-100', 'pointer-events-auto');
+                currentEl.classList.add('opacity-0', 'pointer-events-none');
+            }
+
+            currentPage = pageNumber;
+
+            const newEl = document.getElementById(`page-${currentPage}`);
+            if (newEl) {
+                setTimeout(() => {
+                    newEl.classList.remove('opacity-0', 'pointer-events-none');
+                    newEl.classList.add('opacity-100', 'pointer-events-auto');
+                }, 300);
+            }
+
+            updateHUD();
+
+            if (currentPage === 4) {
+                setTimeout(renderLyraConstellation, 100);
+            }
+        }
+
+        function updateHUD() {
+            const hud = document.getElementById('navHud');
+            if (currentPage === 1) {
+                hud.classList.remove('opacity-100', 'pointer-events-auto');
+                hud.classList.add('opacity-0', 'pointer-events-none');
+            } else {
+                hud.classList.remove('opacity-0', 'pointer-events-none');
+                hud.classList.add('opacity-100', 'pointer-events-auto');
+            }
+
+            document.querySelectorAll('.page-dot').forEach(dot => {
+                const pageNum = parseInt(dot.getAttribute('data-page'));
+                if (pageNum === currentPage) {
+                    dot.className = 'page-dot w-3.5 h-3.5 rounded-full bg-paleMoonlight scale-125 transition-all duration-300 shadow-[0_0_10px_#E8EEF6]';
+                } else {
+                    dot.className = 'page-dot w-2.5 h-2.5 rounded-full bg-stormySteel/40 hover:bg-mutedSilver transition-all duration-300';
+                }
+            });
+
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+        }
+
+        document.getElementById('prevBtn').addEventListener('click', () => goToPage(currentPage - 1));
+        document.getElementById('nextBtn').addEventListener('click', () => goToPage(currentPage + 1));
+
+        document.querySelectorAll('.page-dot').forEach(dot => {
+            dot.addEventListener('click', (e) => {
+                const page = parseInt(e.target.getAttribute('data-page'));
+                goToPage(page);
+            });
+        });
+
+        // Page 1 — Moon Click
+        document.getElementById('moonGateButton').addEventListener('click', () => {
+            const moonVisual = document.getElementById('moonVisual');
+            const rippleContainer = document.getElementById('rippleContainer');
+
+            moonVisual.classList.add('moon-glow-active');
+
+            const ripple = document.createElement('div');
+            ripple.className = 'w-40 h-40 rounded-full border border-paleMoonlight/70 absolute pointer-events-none ripple-effect';
+            rippleContainer.appendChild(ripple);
+
+            setTimeout(() => {
+                ripple.remove();
+                moonVisual.classList.remove('moon-glow-active');
+                goToPage(2);
+            }, 800);
+        });
+
+        // GLOBAL SPOTIFY FLOATING WIDGET TOGGLE (Requirement 1)
+        const toggleSpotifyBtn = document.getElementById('toggleSpotifyWidget');
+        const spotifyContainer = document.getElementById('spotifyEmbedContainer');
+        const closeSpotifyBtn = document.getElementById('closeSpotifyWidget');
+
+        toggleSpotifyBtn.addEventListener('click', () => {
+            if (spotifyContainer.classList.contains('hidden')) {
+                spotifyContainer.classList.remove('hidden');
+            } else {
+                spotifyContainer.classList.add('hidden');
+            }
+        });
+
+        closeSpotifyBtn.addEventListener('click', () => {
+            spotifyContainer.classList.add('hidden');
+        });
+
+        // PAGE 4 — LYRA CONSTELLATION RENDERER (Requirement 2)
+        function renderLyraConstellation() {
+            const starsContainer = document.getElementById('lyraStarsContainer');
+            const svg = document.getElementById('lyraLinesSvg');
+            starsContainer.innerHTML = '';
+            svg.innerHTML = '';
+
+            const containerWidth = starsContainer.clientWidth;
+            const containerHeight = starsContainer.clientHeight;
+
+            // Map relative star coordinates to container pixels
+            const starPoints = lyraStarData.map(star => ({
+                ...star,
+                px: (star.x / 100) * containerWidth,
+                py: (star.y / 100) * containerHeight
+            }));
+
+            // Lyra Constellation Edges (Vega-Triangle + Parallelogram)
+            const edges = [
+                [0, 1], // Vega to Epsilon
+                [1, 2], // Epsilon to Zeta
+                [2, 0], // Zeta to Vega (Upper Triangle)
+                [2, 3], // Zeta to Sheliak
+                [3, 4], // Sheliak to Sulafat
+                [4, 5], // Sulafat to Delta
+                [5, 2]  // Delta to Zeta (Parallelogram Quadrangle)
+            ];
+
+            // Render SVG Constellation Lines
+            edges.forEach(([i, j]) => {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', starPoints[i].px);
+                line.setAttribute('y1', starPoints[i].py);
+                line.setAttribute('x2', starPoints[j].px);
+                line.setAttribute('y2', starPoints[j].py);
+                line.setAttribute('stroke', 'rgba(169, 188, 213, 0.45)');
+                line.setAttribute('stroke-width', '1.5');
+                line.setAttribute('stroke-dasharray', '3 2');
+                svg.appendChild(line);
+            });
+
+            // Render Interactive Stars
+            starPoints.forEach((star) => {
+                const isFound = foundMemories.has(star.id);
+                const node = document.createElement('div');
+                node.className = 'absolute cursor-pointer transform -translate-x-1/2 -translate-y-1/2 group flex flex-col items-center';
+                node.style.left = `${star.px}px`;
+                node.style.top = `${star.py}px`;
+
+                const sizeClass = star.isVega ? 'w-6 h-6' : 'w-4 h-4';
+                const starGlowClass = star.isVega ? 'animate-vega' : (isFound ? 'bg-paleMoonlight shadow-[0_0_15px_#E8EEF6]' : 'bg-stormySteel/80 hover:bg-paleMoonlight shadow-[0_0_10px_#526C8A]');
+
+                node.innerHTML = `
+                    <div class="${sizeClass} rounded-full ${starGlowClass} transition-all duration-300"></div>
+                    <span class="font-handwriting text-xs sm:text-sm text-paleMoonlight/90 opacity-80 group-hover:opacity-100 transition-opacity mt-1 whitespace-nowrap bg-midnight/60 px-2 py-0.5 rounded-full border border-stormySteel/30">
+                        ${star.isVega ? '★ ' : ''}${star.title}
+                    </span>
+                `;
+
+                node.addEventListener('click', () => openMemoryModal(star));
+                starsContainer.appendChild(node);
+            });
+
+            updateMemoryCounter();
+        }
+
+        function openMemoryModal(mem) {
+            foundMemories.add(mem.id);
+            updateMemoryCounter();
+            renderLyraConstellation();
+
+            const modal = document.getElementById('memoryModal');
+            document.getElementById('modalTag').innerText = `${mem.id} — ${mem.starName}`;
+            document.getElementById('modalTitle').innerText = mem.title;
+            document.getElementById('modalBody').innerText = mem.body;
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.classList.add('opacity-100', 'pointer-events-auto');
+        }
+
+        document.getElementById('closeMemoryBtn').addEventListener('click', () => {
+            const modal = document.getElementById('memoryModal');
+            modal.classList.remove('opacity-100', 'pointer-events-auto');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        });
+
+        function updateMemoryCounter() {
+            const counter = document.getElementById('memoryCounter');
+            counter.innerText = `the Lyra constellation — tap stars to gather memories (${foundMemories.size} of 6 found)`;
+        }
+
+        // Final Touch Shimmer (Page 5)
+        document.getElementById('finalShimmerBtn').addEventListener('click', () => {
+            waveOffset += 2.5;
+            const btn = document.getElementById('finalShimmerBtn');
+            btn.innerText = "🌊 the sea remembered your presence.";
+            setTimeout(() => {
+                btn.innerText = "✨ touch the sea one last time";
+            }, 3000);
+        });
+
+        // Web Audio Ambient Synthesizer
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        let noiseNode = null;
+
+        function toggleAmbientAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            if (isAudioPlaying) {
+                if (noiseNode) {
+                    noiseNode.disconnect();
+                    noiseNode = null;
+                }
+                isAudioPlaying = false;
+                document.getElementById('audioStatusText').innerText = "ambient tide";
+                document.getElementById('audioIcon').setAttribute('data-lucide', 'volume-x');
+            } else {
+                const bufferSize = audioCtx.sampleRate * 2;
+                const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+
+                const whiteNoise = audioCtx.createBufferSource();
+                whiteNoise.buffer = noiseBuffer;
+                whiteNoise.loop = true;
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 320;
+
+                const gainNode = audioCtx.createGain();
+                gainNode.gain.value = 0.08;
+
+                whiteNoise.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                whiteNoise.start();
+                noiseNode = whiteNoise;
+                isAudioPlaying = true;
+
+                document.getElementById('audioStatusText').innerText = "tide playing";
+                document.getElementById('audioIcon').setAttribute('data-lucide', 'volume-2');
+            }
+            lucide.createIcons();
+        }
+
+        document.getElementById('audioToggleBtn').addEventListener('click', toggleAmbientAudio);
+    </script>
+</body>
+</html>
